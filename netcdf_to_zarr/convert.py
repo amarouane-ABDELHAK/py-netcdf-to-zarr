@@ -1,15 +1,8 @@
-from multiprocessing import Manager, Process, Queue
-from multiprocessing.managers import Namespace
-from os import cpu_count, environ
+from os import environ
 from os.path import splitext
-from queue import Empty as QueueEmpty
 from re import findall
 from typing import Any, List, Set, Tuple, Union
-
-
-from fsspec.mapping import FSMap
 from netCDF4 import Group as NetCDFGroup, Variable as NetCDFVariable
-
 from zarr import (DirectoryStore, group as create_zarr_group,
                   Group as ZarrGroup, ProcessSynchronizer)
 from zarr.core import Array as ZarrArray
@@ -21,7 +14,7 @@ from helpers import get_zarr_store, get_dataset
 
 # Types for function signatures
 Number = Union[np.integer, np.floating, int, float]
-ZarrStore = Union[DirectoryStore, FSMap]
+ZarrStore = DirectoryStore
 
 # Some global variables that may be shared by different methods
 region = environ.get('AWS_DEFAULT_REGION') or 'us-west-2'
@@ -31,12 +24,7 @@ region = environ.get('AWS_DEFAULT_REGION') or 'us-west-2'
 # for binary prefix: https://physics.nist.gov/cuu/Units/binary.html.
 binary_prefix_conversion_map = {'Ki': 1024, 'Mi': 1048576, 'Gi': 1073741824}
 
-
-
-
-
-
-def mosaic_to_zarr(input_granules: List[str],zarr_store_location, process_count: int = None, **s3kwargs):
+def mosaic_to_zarr(input_granules: List[str],zarr_store_location, **s3kwargs):
     """ Convert input NetCDF files to a Zarr store, preserving data, metadata
         and group hierarchy.
         This function makes use of multiple processes, to parallelise the
@@ -56,42 +44,28 @@ def mosaic_to_zarr(input_granules: List[str],zarr_store_location, process_count:
             the S3 bucket.
     """
 
-    
+
     # Write dimension information from DimensionsMapping (including bounds)
     # Store list of aggregated dimensions/variables to avoid writing them again
     dim_mapping = DimensionsMapping(input_granules)
-    
 
-    if process_count is None:
-        process_count = min(cpu_count(), len(input_granules))
-    else:
-        process_count = min(process_count, cpu_count(), len(input_granules))
 
-    with Manager() as manager:
-        output_queue = manager.Queue(len(input_granules))
-        shared_namespace = manager.Namespace()
-        zarr_store = get_zarr_store(shared_namespace = shared_namespace, zarr_store_location=zarr_store_location, **s3kwargs)
-        aggregated_dimensions = __copy_aggregated_dimensions(dim_mapping,
+
+    zarr_store = get_zarr_store(zarr_store_location=zarr_store_location, **s3kwargs)
+    aggregated_dimensions = __copy_aggregated_dimensions(dim_mapping,
                                                          zarr_store)
 
-        for input_granule in input_granules:
-            output_queue.put(input_granule)
 
-        processes = [Process(target=_output_worker,
-                             args=(output_queue, shared_namespace,
-                                   aggregated_dimensions, input_granules, zarr_store))
-                     for _ in range(process_count)]
 
-        for output_process in processes:
-            output_process.start()
+    _output_worker(aggregated_dimensions, input_granules, zarr_store)
 
-        for output_process in processes:
-            output_process.join()
-            output_process.close()
+    # for output_process in processes:
+    #     output_process.start()
+    #
+    # for output_process in processes:
+    #     output_process.join()
+    #     output_process.close()
 
-        if hasattr(shared_namespace, 'exception'):
-            raise RuntimeError('Problem writing output data to Zarr store: '
-                               f'{shared_namespace.exception}')
 
     consolidate_metadata(zarr_store)
 
@@ -104,7 +78,7 @@ def mosaic_to_zarr(input_granules: List[str],zarr_store_location, process_count:
 
 
 
-def _output_worker(output_queue: Queue, shared_namespace: Namespace,
+def _output_worker(
                    aggregated_dimensions: Set[str], input_granules: List[str], zarr_store:ZarrStore):
     """ This worker function is executed in a spawned process. It checks for
         items in the main queue, which correspond to local file paths for input
@@ -115,18 +89,15 @@ def _output_worker(output_queue: Queue, shared_namespace: Namespace,
     """
 
     zarr_synchronizer = ProcessSynchronizer(
-        f'{splitext(shared_namespace.zarr_root)[0]}.sync'
+        f'{splitext(zarr_store.root)[0]}.sync'
     )
     dim_mapping = DimensionsMapping(input_granules)
 
-    while not hasattr(shared_namespace, 'exception') and not output_queue.empty():
-        try:
-            input_granule = output_queue.get_nowait()
-        except QueueEmpty:
-            break
+
+    for input_granule in input_granules:
 
         try:
-            dataset = get_dataset(input_granule)
+            dataset = get_dataset(input_granule, )
             dataset.set_auto_maskandscale(False)
             __copy_group(dataset,
                              create_zarr_group(zarr_store, overwrite=False,
@@ -136,7 +107,7 @@ def _output_worker(output_queue: Queue, shared_namespace: Namespace,
             # If there was an issue, save a string message from the raised
             # exception. This will cause the other processes to stop processing
             # input NetCDF-4 files.
-            shared_namespace.exception = str(exception)
+            print(f"{exception}")
             raise exception
 
 
@@ -529,8 +500,9 @@ def compute_chunksize(shape: Union[tuple, list],
 
 
 if __name__ == '__main__':
-    input_netcdf_files = ["/Users/amarouane/Downloads/lis_vhrfc_1998_2013_v01.nc"] # s3://sbxamarouane-private/ncs/lis_vhrfc_1998_2013_v01.nc
-    zarr_store_location = "s3://sbxamarouane-private/zarr_folders/lis_vhrfc4.zarr"
+    input_netcdf_files = ["/Users/amarouane/Downloads/lis_vhrfc_1998_2013_v01.nc", "s3://sbxamarouane-private/ncs/lis_vhrfc_1998_2013_v01.nc"]
+    input_netcdf_files = [input_netcdf_files[0]]
+    zarr_store_location = "s3://sbxamarouane-private/zarr_folders/lis_vhrf18.zarr"
     aws_region_name = "us-west-2"
     kwargs = dict(profile = "WSBX", client_kwargs=dict(region_name="us-west-2"))
     foo = mosaic_to_zarr(input_netcdf_files, zarr_store_location=zarr_store_location, process_count=3, **kwargs)
