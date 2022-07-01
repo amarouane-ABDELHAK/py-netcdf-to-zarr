@@ -1,6 +1,12 @@
 # Lightning Dashboard
 
+# Requirements
+Node version 12
+Yarn package Manager
 
+# How to Run
+npm install/yarn install
+yarn serve
 
 ## Getting started
 
