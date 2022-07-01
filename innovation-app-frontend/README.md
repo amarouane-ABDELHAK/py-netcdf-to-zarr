@@ -5,7 +5,7 @@
 *Yarn package Manager.  
 
 # How to Run
-*npm install/yarn install.
+*npm install/yarn install.  
 *yarn serve.
 
 ## Getting started
