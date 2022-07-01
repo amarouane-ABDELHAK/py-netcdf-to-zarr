@@ -504,6 +504,6 @@ if __name__ == '__main__':
     input_netcdf_files = [input_netcdf_files[0]]
     zarr_store_location = "s3://sbxamarouane-private/zarr_folders/lis_vhrf18.zarr"
     aws_region_name = "us-west-2"
-    kwargs = dict(profile = "WSBX", client_kwargs=dict(region_name="us-west-2"))
+    kwargs = dict(profile_name = "WSBX", client_kwargs=dict(region_name="us-west-2"))
     foo = mosaic_to_zarr(input_netcdf_files, zarr_store_location=zarr_store_location, process_count=3, **kwargs)
     print("Hello")

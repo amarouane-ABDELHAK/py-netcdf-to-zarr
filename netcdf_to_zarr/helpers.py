@@ -23,6 +23,7 @@ def get_zarr_store(zarr_store_location, use_localstack=False,profile_name=None, 
         kwargs = dict(profile = <prof_name>, client_kwargs=dict(region_name=region))
         """
         profile_name = os.getenv('AWS_PROFILE', profile_name)
+        print(profile_name)
         if not use_localstack:
             kwargs = dict(profile=profile_name, client_kwargs=dict(region_name='us-west-2'))
 

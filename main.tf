@@ -22,6 +22,18 @@ resource "aws_ecr_repository" "netcdf_to_zarr" {
 }
 
 
+resource "aws_ecr_repository" "zarr_to_cog" {
+  name                 = "${var.prefix}_zarr_to_cog"
+  image_scanning_configuration {
+    scan_on_push = false
+  }
+  tags = {
+    "name" = "netCDF4 to Zarr"
+  }
+}
+
+
+
 resource "aws_iam_role_policy" "lambda_policy" {
   name = "lambda_policy"
   role = aws_iam_role.lambda_role.id
@@ -106,6 +118,22 @@ resource "null_resource" "netcdf_to_zarr_ecr_image" {
 }
 
 
+resource "null_resource" "zarr_to_cog_ecr_image" {
+ triggers = {
+   python_file = md5(file("${path.module}/zarr_to_cog/main.py"))
+   docker_file = md5(file("${path.module}/Dockerfile-zarr-cog"))
+ }
+
+ provisioner "local-exec" {
+   command = <<EOF
+           aws ecr get-login-password --region ${var.region} | docker login --username AWS --password-stdin ${local.account_id}.dkr.ecr.${var.region}.amazonaws.com
+           docker build -f Dockerfile-zarr-cog -t ${aws_ecr_repository.zarr_to_cog.repository_url}:latest .
+           docker push ${aws_ecr_repository.zarr_to_cog.repository_url}:latest
+       EOF
+ }
+}
+
+
 
 
 data "aws_ecr_image" "lambda_image_ecr" {
@@ -113,6 +141,15 @@ data "aws_ecr_image" "lambda_image_ecr" {
    aws_ecr_repository.netcdf_to_zarr
  ]
  repository_name = aws_ecr_repository.netcdf_to_zarr.name
+  image_tag = "latest"
+}
+
+
+data "aws_ecr_image" "lambda_image_ecr_cog" {
+ depends_on = [
+   aws_ecr_repository.zarr_to_cog
+ ]
+ repository_name = aws_ecr_repository.zarr_to_cog.name
   image_tag = "latest"
 }
 
@@ -128,6 +165,18 @@ resource "aws_lambda_function" "netcdf_to_zarr" {
 }
 
 
+resource "aws_lambda_function" "zarr_to_cog" {
+  depends_on = [
+   null_resource.zarr_to_cog_ecr_image
+ ]
+ function_name = "${var.prefix}-zarr_to_cog"
+ role = aws_iam_role.lambda_role.arn
+ timeout = 300
+ memory_size = 10000
+ image_uri = "${aws_ecr_repository.zarr_to_cog.repository_url}@${data.aws_ecr_image.lambda_image_ecr_cog.id}"
+ package_type = "Image"
+}
+
 resource "aws_s3_bucket" "innovation_s3_bucket" {
   bucket = "${var.prefix}-netcdfs"
 }
@@ -141,6 +190,14 @@ resource "aws_lambda_permission" "allow_bucket" {
 }
 
 
+resource "aws_lambda_permission" "allow_bucket_cog" {
+  statement_id  = "AllowExecutionFromS3Bucket"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.zarr_to_cog.arn
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.innovation_s3_bucket.arn
+}
+
 resource "aws_s3_bucket_notification" "bucket_notification" {
   bucket = aws_s3_bucket.innovation_s3_bucket.id
 
@@ -150,12 +207,24 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
     filter_prefix       = "ncs/"
     filter_suffix       = ".nc"
   }
+   lambda_function {
+    lambda_function_arn = aws_lambda_function.zarr_to_cog.arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "zarrs/"
+    filter_suffix       = ".invoked"
+  }
 
-  depends_on = [aws_lambda_permission.allow_bucket]
+  depends_on = [aws_lambda_permission.allow_bucket, aws_lambda_permission.allow_bucket_cog]
 }
 
 
 resource "aws_cloudwatch_log_group" "lambda_log_group" {
   name              = "/aws/lambda/${aws_lambda_function.netcdf_to_zarr.function_name}"
+  retention_in_days = 14
+}
+
+
+resource "aws_cloudwatch_log_group" "lambda_log_group_cog" {
+  name              = "/aws/lambda/${aws_lambda_function.zarr_to_cog.function_name}"
   retention_in_days = 14
 }
