@@ -170,8 +170,8 @@ class MbMap extends React.Component {
       const {comparing, onAction, mapStyle } = allProps;   
 
       this.mbMap.addSource(this.props.name, {
-        //tiles:getSingleCOG(this.props.name, this.props.id), 
-        data:'https://ghrc-cog.s3.us-west-2.amazonaws.com/TRMM-LIS/VHRAC_LIS_FRD_cogs/VHRAC_LIS_FRD_Time_1.0_co.tif',
+        tiles:getSingleCOG(this.props.name, this.props.id), 
+        //data:'https://ghrc-cog.s3.us-west-2.amazonaws.com/TRMM-LIS/VHRAC_LIS_FRD_cogs/VHRAC_LIS_FRD_Time_1.0_co.tif',
         type:'raster'
       })
       this.mbMap.addLayer({
