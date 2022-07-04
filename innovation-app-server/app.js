@@ -12,6 +12,5 @@ app.use(express.json())
 
 const PORT = 3056;
 
-
 app.listen(PORT, console.log('Server Listening on PORT '+PORT+'...'))
 app.use('/', routes)
