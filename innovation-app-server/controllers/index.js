@@ -22,7 +22,8 @@ async function getData(){
             data.Contents.map((element)=>{
                 arr.push(element.Key)
             })
-            return Help.COGFile(arr)
+            //console.log(arr)
+            return Help.jsonData(arr)
         }).catch(function (err) {
             console.warn('Not exist folder exception is not catch here!' );
             return false;
@@ -32,7 +33,6 @@ async function getData(){
         console.warn('Errorrrr')
         return false
     }
-
 }
 
 module.exports = {
