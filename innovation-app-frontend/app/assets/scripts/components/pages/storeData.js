@@ -5,6 +5,20 @@ export function setData(data){
     data.map((element)=>{
         rawData.push(element)
     })
+
+    // const response = await fetch('http://localhost:3056/data')
+    // const data = await response.json();
+
+    // console.log(data)
+
+}
+
+async function fetchData(){
+    const response = await fetch('http://localhost:3056/data');
+    const data = await response.json();
+
+    console.log(data)
+    return data;
 }
 
 export function getData(){

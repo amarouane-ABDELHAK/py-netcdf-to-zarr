@@ -58,6 +58,7 @@ const Cogs = () =>{
     const history = useHistory();
     const data = getCOGS(params.name)
 
+    console.log(data)
     const clickHandler = (e) =>{
         history.push("/map/"+params.name+'/'+e.target.value)
     }

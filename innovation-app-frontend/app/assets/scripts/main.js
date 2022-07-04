@@ -23,6 +23,7 @@ import UhOh from './components/uhoh';
 
 import { setData } from './components/pages/storeData';
 import data from './components/pages/data.json'
+import LayerDataLoader from './layer-data-loader';
 
 const { gaTrackingCode } = config;
 
@@ -47,7 +48,7 @@ class Root extends React.Component {
       // https://css-tricks.com/the-trick-to-viewport-units-on-mobile/
       this.setState({ windowHeight: window.innerHeight });
     });
-    setData(data.files)
+    // await setData(data.files)
   }
   
   componentDidMount () {
@@ -65,12 +66,15 @@ class Root extends React.Component {
           <ThemeProvider theme={theme.main}>
             <ErrorBoundary>
               <GlobalStyles innerHeight={this.state.windowHeight} />
-                <Switch>
+                <LayerDataLoader
+                  onReady={() => this.setState({ dataReady: true })}
+                />
+                {this.state.dataReady && (<Switch>
                   <Route exact path='/' component={Home}/>
                   <Route exact path='/COGS/:name' component={Cogs}/>
                   <Route exact path='/map/:name/:id' component={GlobalExplore} /> 
                   <Route path='*' component={UhOh} />
-                </Switch>
+                </Switch>)}
               <ReactTooltip effect='solid' className='type-primary' />
             </ErrorBoundary>
           </ThemeProvider>

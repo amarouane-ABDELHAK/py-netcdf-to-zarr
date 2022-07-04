@@ -21,14 +21,18 @@ const COGFile = (data) =>{
 const createJSON = (files) =>{
 
     const arr1 = {
-        files:[
+        files:[{
+            id:'0',
+            name:'COGS',
+            COGS:[
 
-        ]
+            ],
+        }]
     }
     var id = 0;
 
     files.map((element)=>{
-        arr1.files.push({
+        arr1.files[0].COGS.push({
             id:id.toString(),
             name:element,
             location:"https://innovation-netcdfs.s3.us-west-2.amazonaws.com/cogs/"+element,

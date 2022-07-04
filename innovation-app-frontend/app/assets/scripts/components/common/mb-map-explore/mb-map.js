@@ -170,7 +170,7 @@ class MbMap extends React.Component {
       const {comparing, onAction, mapStyle } = allProps;   
 
       this.mbMap.addSource(this.props.name, {
-        tiles:getSingleCOG(this.props.name, this.props.id), 
+        tiles:['https://wug8w3fg42.execute-api.us-west-2.amazonaws.com/development/singleband/VHRAC/2013_01_01/LIS/{z}/{x}/{y}.png?colormap=terrain&stretch_range=[0.00010455249866936356,0.06766455620527267]'], 
         //data:'https://ghrc-cog.s3.us-west-2.amazonaws.com/TRMM-LIS/VHRAC_LIS_FRD_cogs/VHRAC_LIS_FRD_Time_1.0_co.tif',
         type:'raster'
       })
