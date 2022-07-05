@@ -18,7 +18,7 @@ def create_fc_cog(grid, var, dest_path='./'):
     cog_name = f'{var}_co.tif'
     cog_path = f"{dest_path.rstrip('/')}/{cog_name}"
     grid.rio.to_raster(rf'{cog_path}', driver='COG')
-    return os.path.basename(cog_path)
+    return [os.path.basename(cog_path)]
 
 def create_spec_cogs(flash_rate_ds, var, dest_path='./'):
     '''
@@ -30,6 +30,7 @@ def create_spec_cogs(flash_rate_ds, var, dest_path='./'):
     '''
     grids = []
     ds_type = flash_rate_ds.dims[0]
+    cog_paths = []
 
     for grid in flash_rate_ds:
         #grid = grid[::-1] # Orientation is flipped to the correct position
@@ -50,8 +51,9 @@ def create_spec_cogs(flash_rate_ds, var, dest_path='./'):
         cog_path = f'{dest_folder}/{cog_name}'
         grid.rio.to_raster(rf'{cog_path}', driver='COG')
         grids.append(grid)
+        cog_paths.append(f'{var}_cogs/{cog_name}')
 
-    return cog_path
+    return cog_paths
 
 def get_grid(s3uri, profile_name=None, client_kwargs=dict(region_name='us-west-2')):
     s3 = s3fs.S3FileSystem(profile=profile_name,client_kwargs=client_kwargs)
@@ -79,6 +81,23 @@ def upload_file(file_name, bucket, object_name=None):
 
     return response
 
+
+def delete_s3_file(bucket, object_key=None):
+    """Delete a file to an S3 bucket
+
+    :param bucket: Bucket to upload to
+    :param object_key: S3 object name. If not specified then file_name is used
+    :return: True if file was uploaded, else False
+    """
+
+
+    # Upload the file
+    s3_client = boto3.client('s3')
+
+    response = s3_client.delete_object(Bucket=bucket, Key=object_key)
+
+    return response
+
 def handler(event, context):
     os.chdir('/tmp')
     records = event['Records']
@@ -91,10 +110,13 @@ def handler(event, context):
         grid = get_grid(f"s3://{bucket_name}/{object_key.replace('invoked', 'zarr')}")
         flash_rate_ds = grid[var]
         if var == 'VHRFC_LIS_FRD':
-            cog_path = create_fc_cog(flash_rate_ds, var)
+            cog_paths = create_fc_cog(flash_rate_ds, var)
             # map_grid(grid)
         else:
-            cog_path = create_spec_cogs(flash_rate_ds, var)
-
-    upload_file(cog_path, bucket_name, f"cogs/{cog_path}")
+            cog_paths = create_spec_cogs(flash_rate_ds, var)
+        delete_s3_file(bucket=bucket_name, object_key=object_key)
+    for cog_path in cog_paths:
+        upload_file(cog_path, bucket_name, f"cogs/{cog_path}")
+    
+    
     return event

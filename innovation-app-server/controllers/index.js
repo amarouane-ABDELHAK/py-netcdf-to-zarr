@@ -1,8 +1,7 @@
 const aws = require('aws-sdk')
 aws.config.setPromisesDependency();
 aws.config.update({
-    accessKeyId:process.env.ACCESS_ID,
-    secretAccessKey:process.env.SECRET_ACCESS_KEY,
+    profile:process.env.AWS_PROFILE,
     region:'us-west-2'
 })
 

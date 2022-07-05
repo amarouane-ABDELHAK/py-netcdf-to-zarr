@@ -160,6 +160,7 @@ resource "aws_lambda_function" "netcdf_to_zarr" {
  function_name = "${var.prefix}-netcdf_to_zarr"
  role = aws_iam_role.lambda_role.arn
  timeout = 300
+ memory_size = 10000
  image_uri = "${aws_ecr_repository.netcdf_to_zarr.repository_url}@${data.aws_ecr_image.lambda_image_ecr.id}"
  package_type = "Image"
 }
