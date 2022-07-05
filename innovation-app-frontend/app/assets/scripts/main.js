@@ -24,6 +24,7 @@ import UhOh from './components/uhoh';
 import { setData } from './components/pages/storeData';
 import data from './components/pages/data.json'
 import LayerDataLoader from './layer-data-loader';
+import Modal from './utils/Modal';
 
 const { gaTrackingCode } = config;
 
@@ -66,6 +67,7 @@ class Root extends React.Component {
           <ThemeProvider theme={theme.main}>
             <ErrorBoundary>
               <GlobalStyles innerHeight={this.state.windowHeight} />
+                {(this.state.dataReady === false) && <Modal />}
                 <LayerDataLoader
                   onReady={() => this.setState({ dataReady: true })}
                 />

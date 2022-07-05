@@ -1,8 +1,9 @@
-const rawData = []
-
+var rawData = [];
+const sampleData = []
 
 export function setData(data){
-    data.map((element)=>{
+    console.log(data)
+    data.files.map((element)=>{
         rawData.push(element)
     })
 
@@ -11,6 +12,12 @@ export function setData(data){
 
     // console.log(data)
 
+}
+
+export function setDatasample(data){
+    data.map((element)=>{
+        rawData.push(element)
+    })
 }
 
 async function fetchData(){
@@ -27,6 +34,7 @@ export function getData(){
 
 export function getFolders(){
     let foldernames = []
+    console.log(rawData)
     rawData.map((element)=>{
         foldernames.push(element.name)
     })

@@ -1,7 +1,7 @@
 const jsonData = (data) =>{
 
     const files = COGFile(data);
-    const result = createJSON(files);
+    //const result = createJSON(files);
 
     return result
 }
@@ -11,7 +11,12 @@ const COGFile = (data) =>{
 
     data.map((element)=>{
         if(element.substring(0,4) === 'cogs'){
-            arr.push(element.substring(5, element.length))
+            if(element.length >= 30){
+                arr.push(element.substring(24, element.length))
+            }else{
+                console.log(element.substring(5, element.length))
+                arr.push(element.substring(5, element.length))
+            }
         }
     })
 

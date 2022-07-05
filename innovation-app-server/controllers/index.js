@@ -10,7 +10,6 @@ const Help = require('./HelperMethod')
 
 const s3 = new aws.S3()
 
-
 async function getData(){
     var params = {
         Bucket: 'innovation-netcdfs'    
@@ -22,8 +21,8 @@ async function getData(){
             data.Contents.map((element)=>{
                 arr.push(element.Key)
             })
-            //console.log(arr)
-            return Help.jsonData(arr)
+            console.log(arr)
+            return Help.COGFile(arr)
         }).catch(function (err) {
             console.warn('Not exist folder exception is not catch here!' );
             return false;

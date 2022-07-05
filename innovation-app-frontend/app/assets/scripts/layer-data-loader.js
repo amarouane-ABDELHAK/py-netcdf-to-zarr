@@ -6,6 +6,7 @@ import { connect } from 'react-redux';
 import config from './config';
 import { fetchJSON, wrapApiResult } from './redux/reduxeed';
 import {setData} from './components/pages/storeData';
+import {filetoJSON} from './utils/HelperMethod';
 
 class LayerDataLoader extends React.Component {
   componentDidMount () {
@@ -22,11 +23,14 @@ class LayerDataLoader extends React.Component {
 
   async requestData () {
 
+
     const response = await fetch("http://localhost:3056/data")
     const data = await response.json();
 
-    setData(data.files)
-    console.log(data)
+    //setData(data.files)
+    setData(filetoJSON(data))
+    //console.log(data.files)
+    //console.log(data.files[0].COGS.length)
     this.props.onReady();
   }
 
