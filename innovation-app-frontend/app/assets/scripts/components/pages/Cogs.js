@@ -39,7 +39,7 @@ cursor:pointer;
 const Download = styled.div`
 background-color:DodgerBlue;
 height:30px;
-width:80%;
+width:100%;
 margin-top:5px;
 font-size: 20px;
 font-weight:500;
@@ -87,12 +87,14 @@ const Cogs = () =>{
                                     <COGS onClick={clickHandler} value={element.id} key={element.name} />
                                     <div style={{display:'flex', flexDirection:'column',justifyContent:'ceneter', textAlign:'center', alignItems:'center'}}>
                                         <h3>{element.name}</h3>
-                                        <Download onClick={downloadHandler}>
-                                            <div style={{marginRight:'20px', marginLeft:'10px', marginTop:'2px'}}>
-                                            <BsDownload/>
-                                            </div>
-                                            <a style={{color:'black', fontSize:'20px', marginLeft:'20px'}}href={element.location}>Download</a>
-                                        </Download>
+                                        <a href={element.location} style={{width:'100%'}}>
+                                            <Download onClick={downloadHandler}>
+                                                <div style={{marginRight:'20px', marginLeft:'10px', marginTop:'2px'}}>
+                                                <BsDownload/>
+                                                </div>
+                                                <div style={{color:'black', fontSize:'20px', marginLeft:'10px'}}>Download</div>
+                                            </Download>
+                                        </a>
                                     </div>
                                 </div>
                             )  
