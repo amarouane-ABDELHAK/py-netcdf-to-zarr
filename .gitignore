@@ -132,4 +132,5 @@ env.sh
 *.tfstate*
 .terraform
 
+innovation-app-server/node_modules
 node_modules
