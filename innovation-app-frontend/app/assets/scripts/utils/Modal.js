@@ -78,7 +78,7 @@ const Modal = (props) =>{
     const [modal, setModal] = useState(true)
     
     useEffect(()=>{
-        let timer = setTimeout(()=>setModal(false), 2500)
+        let timer = setTimeout(()=>setModal(false), 3500)
         return ()=>{
             clearTimeout(timer);
         }
