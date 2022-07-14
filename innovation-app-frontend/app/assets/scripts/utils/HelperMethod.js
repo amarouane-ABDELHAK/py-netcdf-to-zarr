@@ -13,7 +13,6 @@ export const filetoJSON = (filename) =>{
 
     arr.files[0].COGS.push()
 
-
     filename.map((element)=>{
         arr.files[0].COGS.push(findElement(element))
     })
@@ -23,18 +22,51 @@ export const filetoJSON = (filename) =>{
 
 const findElement = (name) =>{
 
-    for(var i = 0;i<data.files.length;i++){
-        for(var j = 0;j<data.files[i].COGS.length;j++){
-            if(data.files[i].COGS[j].name === name){
-                return data.files[i].COGS[j]
+    const title = name.slice(0,5)
+    //console.log(name)
+    var number;
+
+    var index = 23;
+    var name2 = "VHRMC_LIS_FRD_Month_445.0_co.tif"
+
+    if(name !== 'VHRFC_LIS_FRD_co.tif'){
+        for(var i = 0;i<5;i++){
+            if(name.slice(index, index+1) === '_'){
+                number = name.slice(20, index)
+                break;
+            }else{
+                index = index + 1;
             }
         }
+    }
+    
+    var API;
+
+    // for(var i = 0;i<data.files.length;i++){
+    //     for(var j = 0;j<data.files[i].COGS.length;j++){
+    //         if(data.files[i].COGS[j].name === name){
+    //             return data.files[i].COGS[j]
+    //         }
+    //     }
+    // }
+
+
+    if(title === 'VHRFC'){
+        API = "https://3ckzasvsu4.execute-api.us-west-2.amazonaws.com/development/singleband/VHRFC/201301/LIS/{z}/{x}/{y}.png?colormap=terrain&stretch_range=[0.32524657249450684,23.42554473876953]"
+    }else if(title === 'VHRMC'){
+        API = "https://3ckzasvsu4.execute-api.us-west-2.amazonaws.com/development/singleband/VHRMC/"+number+"/LIS/{z}/{x}/{y}.png?colormap=terrain&stretch_range=[0.00004769196311826818,0.06768383830785751]"
+    }else if(title === 'VHRDC'){
+        API = "https://3ckzasvsu4.execute-api.us-west-2.amazonaws.com/development/singleband/VHRDC/"+number+"/LIS/{z}/{x}/{y}.png?colormap=terrain&stretch_range=[0.000010303672752343118,0.0022336216643452644]"
+    }else if(title === 'VHRAC'){
+        API = "https://3ckzasvsu4.execute-api.us-west-2.amazonaws.com/development/singleband/VHRAC/"+number+"/LIS/{z}/{x}/{y}.png?colormap=terrain&stretch_range=[0.00010072781151393428,0.08138028532266617]"
+    }else if(title === 'VHRSC'){
+        API = "https://3ckzasvsu4.execute-api.us-west-2.amazonaws.com/development/singleband/VHRSC/"+number+"/LIS/{z}/{x}/{y}.png?colormap=terrain&stretch_range=[0.00010455249866936356,0.06766455620527267]"
     }
 
     return {
         id:Math.random().toString(),
         name:name,
-        API:'https://3ckzasvsu4.execute-api.us-west-2.amazonaws.com/development/singleband/VHRFC/LIS/FRD/{z}/{x}/{y}.png?colormap=terrain&stretch_range=[0.32524657249450684,23.42554473876953]',
+        API:API,
         location:'https://innovation-netcdfs.s3.us-west-2.amazonaws.com/cogs/VHRFC_LIS_FRD_co.tif',
         thumbnailURL:''
     }

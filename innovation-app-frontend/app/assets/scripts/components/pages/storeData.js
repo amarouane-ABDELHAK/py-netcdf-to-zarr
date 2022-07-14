@@ -7,11 +7,6 @@ export function setData(data){
         rawData.push(element)
     })
 
-    // const response = await fetch('http://localhost:3056/data')
-    // const data = await response.json();
-
-    // console.log(data)
-
 }
 
 export function setDatasample(data){
@@ -20,13 +15,6 @@ export function setDatasample(data){
     })
 }
 
-async function fetchData(){
-    const response = await fetch('http://localhost:3056/data');
-    const data = await response.json();
-
-    console.log(data)
-    return data;
-}
 
 export function getData(){
     return rawData
