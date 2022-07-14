@@ -46,6 +46,7 @@ font-weight:500;
 display:flex;
 border:2px solid black;
 color:black;
+justify-content:center;
 :hover{
     cursor:pointer;
     background-color:RoyalBlue;
@@ -89,10 +90,10 @@ const Cogs = () =>{
                                         <h3>{element.name}</h3>
                                         <a href={element.location} style={{width:'100%'}}>
                                             <Download onClick={downloadHandler}>
-                                                <div style={{marginRight:'20px', marginLeft:'10px', marginTop:'2px'}}>
-                                                <BsDownload/>
+                                                <div style={{marginTop:'2px', marginRight:'15px'}}>
+                                                    <BsDownload/>
                                                 </div>
-                                                <div style={{color:'black', fontSize:'20px', marginLeft:'10px'}}>Download</div>
+                                                <div style={{color:'black', fontSize:'20px'}}>Download</div>
                                             </Download>
                                         </a>
                                     </div>
