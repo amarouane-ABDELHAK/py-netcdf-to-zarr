@@ -14,11 +14,7 @@ class LayerDataLoader extends React.Component {
   }
 
   componentDidUpdate (prevProps) {
-    // if (spotlightList.isReady() && !prevProps.spotlightList.isReady()) {
-    //   this.requestData();
-    // }
     console.log('im in pudate')
-    //this.requestData();
   }
 
   async requestData () {
